@@ -10,6 +10,7 @@ class ofApp : public ofBaseApp{
 		void update();
 		void draw();
         void exit();
+        void audioIn(ofSoundBuffer & buffer);
 
 		void keyPressed(int key);
 		void keyReleased(int key);

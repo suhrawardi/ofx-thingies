@@ -5,6 +5,9 @@ ofFbo fbo;
 ofVideoPlayer video;
 ofVideoGrabber camera;
 
+float soundLevel;
+ofSoundStream micInput;
+
 float elapsedTime;
 
 int video1Alpha;
@@ -30,6 +33,20 @@ void ofApp::setup() {
     
     video1Alpha = 100;
     video2Alpha = 100;
+    
+    soundLevel = 0;
+    
+    ofSoundStreamSettings settings;
+    auto devices = micInput.getMatchingDevices("default");
+    if(!devices.empty()){
+        settings.setInDevice(devices[0]);
+    }
+    settings.setInListener(this);
+    settings.sampleRate = 44100;
+    settings.numOutputChannels = 0;
+    settings.numInputChannels = 1;
+    settings.bufferSize = 44100;
+    micInput.setup(settings);
 }
 
 //--------------------------------------------------------------
@@ -38,7 +55,7 @@ void ofApp::update(){
     if (camera.isInitialized()) camera.update();
     
     video1Alpha = (int)(255 * ofNoise(0.2 * elapsedTime, 1));
-    video2Alpha = (int)(255 * ofNoise(1, 0.2 * elapsedTime));
+    video2Alpha = (int)soundLevel % 255;
 }
 
 //--------------------------------------------------------------
@@ -59,6 +76,17 @@ void ofApp::draw(){
     
     ofSetColor(255);
     fbo.draw(0, 0, ofGetWidth(), ofGetHeight());
+}
+
+void ofApp::audioIn(ofSoundBuffer & buffer) {
+    double rms = 0;
+    
+    for (int i = 0; i < buffer.size(); i++) {
+        float sample = buffer.getSample(i, 1);
+        rms += sample * sample;
+    }
+    //std::printf("value: %f\n", rms);
+    soundLevel = rms;
 }
 
 void ofApp::exit() {
