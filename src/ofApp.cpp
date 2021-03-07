@@ -55,7 +55,9 @@ void ofApp::update(){
     if (camera.isInitialized()) camera.update();
     
     video1Alpha = (int)(255 * ofNoise(0.2 * elapsedTime, 1));
-    video2Alpha = (int)soundLevel % 255;
+    video2Alpha = (int)(soundLevel * 700);
+    if (video2Alpha > 255) video2Alpha = 255;
+    std::printf("RMS %d\n", video2Alpha);
 }
 
 //--------------------------------------------------------------
@@ -79,14 +81,7 @@ void ofApp::draw(){
 }
 
 void ofApp::audioIn(ofSoundBuffer & buffer) {
-    double rms = 0;
-    
-    for (int i = 0; i < buffer.size(); i++) {
-        float sample = buffer.getSample(i, 1);
-        rms += sample * sample;
-    }
-    //std::printf("value: %f\n", rms);
-    soundLevel = rms;
+    soundLevel = buffer.getRMSAmplitude();
 }
 
 void ofApp::exit() {
