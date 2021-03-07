@@ -11,16 +11,14 @@ ofSoundStream micInput;
 
 float elapsedTime;
 
-int video1Alpha;
-int video2Alpha;
+float video1Alpha;
+float video2Alpha;
 
 //--------------------------------------------------------------
 void ofApp::setup() {
     shader.load("fragShader");
 
     fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
-    
-    elapsedTime = ofGetElapsedTimef();
     
     ofSetWindowTitle("Video thingies");
     ofSetWindowShape(1280, 720);
@@ -34,14 +32,14 @@ void ofApp::setup() {
     camera.setDesiredFrameRate(30);
     camera.initGrabber(1280, 720);
     
-    video1Alpha = 100;
-    video2Alpha = 100;
+    video1Alpha = 0.0;
+    video2Alpha = 0.0;
     
     soundLevel = 0;
     
     ofSoundStreamSettings settings;
     auto devices = micInput.getMatchingDevices("default");
-    if(!devices.empty()){
+    if (!devices.empty()) {
         settings.setInDevice(devices[0]);
     }
     settings.setInListener(this);
@@ -57,10 +55,15 @@ void ofApp::update() {
     video.update();
     if (camera.isInitialized()) camera.update();
     
-    video1Alpha = (int)(255 * ofNoise(0.2 * elapsedTime, 1));
-    video2Alpha = (int)(soundLevel * 700);
-    if (video2Alpha > 255) video2Alpha = 255;
-    // std::printf("RMS %d\n", video2Alpha);
+    elapsedTime = ofGetElapsedTimef();
+
+    video1Alpha = 1.0 - ofNoise(elapsedTime);
+    if (video1Alpha > 1.0) video1Alpha = 1.0;
+    video2Alpha = soundLevel * 30;
+    if (video2Alpha > 1.0) video2Alpha = 1.0;
+    // std::printf("Elapsed %f\n", elapsedTime);
+    // std::printf("Noise %f\n", ofNoise(elapsedTime));
+    // std::printf("RMS %f\n", video1Alpha);
 }
 
 //--------------------------------------------------------------
@@ -69,27 +72,30 @@ void ofApp::draw() {
     fbo.begin();
 
     ofDisableSmoothing();
-    ofSetColor(255, video1Alpha);
-    video.draw(0, 0, ofGetWidth(), ofGetHeight());
-    video.getTexturePtr();
+    ofEnableBlendMode(OF_BLENDMODE_ADD);
 
+    ofSetColor(255, video1Alpha * 64);
+    video.draw(0, 0, ofGetWidth(), ofGetHeight());
+    ofEnableAlphaBlending();
+
+    shader.setUniform1f("alphaVal", video2Alpha);
     if (camera.isInitialized()) {
-        ofSetColor(255, video2Alpha);
         camera.draw(0, 0, ofGetWidth(), ofGetHeight());
+        camera.getTexturePtr();
+        // ofEnableAlphaBlending();
     }
     
-    ofEnableBlendMode(OF_BLENDMODE_ADD);
-    ofEnableAlphaBlending();
     ofEnableSmoothing();
 
     fbo.end();
     shader.end();
     
-    ofSetColor(255);
     fbo.draw(0, 0, ofGetWidth(), ofGetHeight());
+    ofSetColor(255);
 }
 
 void ofApp::audioIn(ofSoundBuffer & buffer) {
+    // std::printf("RMS %f\n", buffer.getRMSAmplitude());
     soundLevel = buffer.getRMSAmplitude();
 }
 
