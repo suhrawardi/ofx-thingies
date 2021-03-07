@@ -88,7 +88,12 @@ void ofApp::exit() {
 }
 
 //--------------------------------------------------------------
-void ofApp::keyPressed(int key){
+void ofApp::keyPressed(int key) {
+    if ( key == ' ' ) {
+     ofImage image;
+     image.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
+     image.save("screen.png");
+    }
 }
 
 //--------------------------------------------------------------
