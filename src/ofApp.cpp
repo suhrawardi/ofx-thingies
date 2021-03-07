@@ -57,7 +57,7 @@ void ofApp::update() {
     
     elapsedTime = ofGetElapsedTimef();
 
-    video1Alpha = 1.0 - ofNoise(elapsedTime);
+    video1Alpha = ofNoise(elapsedTime);
     if (video1Alpha > 1.0) video1Alpha = 1.0;
     video2Alpha = soundLevel * 30;
     if (video2Alpha > 1.0) video2Alpha = 1.0;
@@ -74,16 +74,17 @@ void ofApp::draw() {
     ofDisableSmoothing();
     ofEnableBlendMode(OF_BLENDMODE_ADD);
 
-    ofSetColor(255, video1Alpha * 64);
-    video.draw(0, 0, ofGetWidth(), ofGetHeight());
-    ofEnableAlphaBlending();
-
-    shader.setUniform1f("alphaVal", video2Alpha);
     if (camera.isInitialized()) {
+        shader.setUniform1f("alphaVal", video2Alpha);
         camera.draw(0, 0, ofGetWidth(), ofGetHeight());
         camera.getTexturePtr();
-        // ofEnableAlphaBlending();
+        ofEnableAlphaBlending();
     }
+    
+    shader.setUniform1f("alphaVal", video1Alpha);
+    video.draw(0, 0, ofGetWidth(), ofGetHeight());
+    video.getTexturePtr();
+    ofEnableAlphaBlending();
     
     ofEnableSmoothing();
 
