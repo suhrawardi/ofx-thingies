@@ -5,23 +5,21 @@ ofFbo fbo;
 ofVideoPlayer video;
 ofVideoGrabber camera;
 
-bool showGui;
+float elapsedTime;
 
-ofxPanel gui;
-ofxGuiGroup mixerGroup;
-ofxFloatSlider video1Alpha, video2Alpha;
+int video1Alpha;
+int video2Alpha;
 
 //--------------------------------------------------------------
 void ofApp::setup() {
     fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
     
+    elapsedTime = ofGetElapsedTimef();
+    
     ofSetWindowTitle("Video thingies");
     ofSetWindowShape(1280, 720);
-    ofSetFrameRate(60);
+    ofSetFrameRate(30);
     ofBackground(ofColor::white);
-    
-    gui.loadFromFile("settings.xml");
-    showGui = true;
     
     video.load("een.mov");
     video.play();
@@ -29,23 +27,18 @@ void ofApp::setup() {
     camera.setDeviceID(0);
     camera.setDesiredFrameRate(30);
     camera.initGrabber(1280, 720);
-
-    gui.setup("Mixer", "settings.xml");
-    gui.setName("Mixer");
     
-    mixerGroup.setup("Mixer");
-    mixerGroup.setHeaderBackgroundColor(ofColor::blue);
-    mixerGroup.setBorderColor(ofColor::blue);
-    mixerGroup.add(video1Alpha.setup("Een", 100, 0, 255));
-    mixerGroup.add(video2Alpha.setup("Twee", 100, 0, 255));
-    
-    gui.add(&mixerGroup);
+    video1Alpha = 100;
+    video2Alpha = 100;
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
     video.update();
     if (camera.isInitialized()) camera.update();
+    
+    video1Alpha = (int)(255 * ofNoise(0.2 * elapsedTime, 1));
+    video2Alpha = (int)(255 * ofNoise(1, 0.2 * elapsedTime));
 }
 
 //--------------------------------------------------------------
@@ -66,20 +59,13 @@ void ofApp::draw(){
     
     ofSetColor(255);
     fbo.draw(0, 0, ofGetWidth(), ofGetHeight());
-    
-    if (showGui) gui.draw();
 }
 
 void ofApp::exit() {
-    gui.saveToFile("settings.xml");
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-    if (key == 'z') {
-        showGui = !showGui;
-    }
-
 }
 
 //--------------------------------------------------------------
