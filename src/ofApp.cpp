@@ -17,6 +17,7 @@ int video2Alpha;
 //--------------------------------------------------------------
 void ofApp::setup() {
     shader.load("fragShader");
+
     fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
     
     elapsedTime = ofGetElapsedTimef();
@@ -59,17 +60,19 @@ void ofApp::update() {
     video1Alpha = (int)(255 * ofNoise(0.2 * elapsedTime, 1));
     video2Alpha = (int)(soundLevel * 700);
     if (video2Alpha > 255) video2Alpha = 255;
-    std::printf("RMS %d\n", video2Alpha);
+    // std::printf("RMS %d\n", video2Alpha);
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
     shader.begin();
-
     fbo.begin();
+
     ofDisableSmoothing();
     ofSetColor(255, video1Alpha);
     video.draw(0, 0, ofGetWidth(), ofGetHeight());
+    video.getTexturePtr();
+
     if (camera.isInitialized()) {
         ofSetColor(255, video2Alpha);
         camera.draw(0, 0, ofGetWidth(), ofGetHeight());
@@ -78,11 +81,12 @@ void ofApp::draw() {
     ofEnableBlendMode(OF_BLENDMODE_ADD);
     ofEnableAlphaBlending();
     ofEnableSmoothing();
+
     fbo.end();
+    shader.end();
     
     ofSetColor(255);
     fbo.draw(0, 0, ofGetWidth(), ofGetHeight());
-    shader.end();
 }
 
 void ofApp::audioIn(ofSoundBuffer & buffer) {
