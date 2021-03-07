@@ -1,6 +1,7 @@
 #include "ofApp.h"
 
 ofFbo fbo;
+ofShader shader;
 
 ofVideoPlayer video;
 ofVideoGrabber camera;
@@ -15,6 +16,7 @@ int video2Alpha;
 
 //--------------------------------------------------------------
 void ofApp::setup() {
+    shader.load("fragShader");
     fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
     
     elapsedTime = ofGetElapsedTimef();
@@ -50,7 +52,7 @@ void ofApp::setup() {
 }
 
 //--------------------------------------------------------------
-void ofApp::update(){
+void ofApp::update() {
     video.update();
     if (camera.isInitialized()) camera.update();
     
@@ -61,7 +63,9 @@ void ofApp::update(){
 }
 
 //--------------------------------------------------------------
-void ofApp::draw(){
+void ofApp::draw() {
+    shader.begin();
+
     fbo.begin();
     ofDisableSmoothing();
     ofSetColor(255, video1Alpha);
@@ -78,6 +82,7 @@ void ofApp::draw(){
     
     ofSetColor(255);
     fbo.draw(0, 0, ofGetWidth(), ofGetHeight());
+    shader.end();
 }
 
 void ofApp::audioIn(ofSoundBuffer & buffer) {
